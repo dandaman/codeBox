@@ -1,0 +1,92 @@
+#! /usr/bin/env python3
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# AUTHOR: Daniel.Lang@helmholtz-muenchen.de
+
+import argparse
+import subprocess
+from sys import exit
+import xml.etree.ElementTree
+import re
+import numpy as np
+
+
+# Set the version number:
+version = '0.1 (2016-07-14)'
+
+# Set up the command line arguments & parse them:
+parser = argparse.ArgumentParser(description = 'Summarize running queues/jobs')
+parser.add_argument('-v', '--version', action='version', version='%(prog)s {0}'.format(version))
+parser.add_argument('-q', '--queue', dest='queue', action='store', help='show only specific queue')
+args = parser.parse_args()
+
+def error(message): exit('ERROR: {}'.format(message))
+
+# Get the XML data from qstat:
+try: qstat_process = subprocess.Popen(args=['qstat', '-f', '-xml' ], stdout=subprocess.PIPE, universal_newlines=True)
+except: error('failed to execute subprocess "qstat"')
+try: result = qstat_process.communicate(timeout=15)[0]
+except:
+	qstat_process.kill()
+	qstat_process.communicate()
+	error('failed to get job data from qstat')
+
+# Parse the output XML:
+try: xml_root = xml.etree.ElementTree.fromstring(result)
+except: error('failed to parse returned XML')
+
+queues	= {}
+
+def addQueue(node):
+	p=re.compile("^([^\@]+)\@")
+	name=p.match(node.find("name").text).group(1)
+	if name not in queues.keys():
+		queues[name]= {}
+		queues[name]['slots_total']=0
+		queues[name]['slots_used']=0
+		queues[name]['slots_resv']=0
+		queues[name]['np_load_avg']=[]
+	
+	queues[name]['slots_total'] += int(node.find('slots_total').text)
+	queues[name]['slots_used'] += int(node.find('slots_used').text)
+	queues[name]['slots_resv'] += int(node.find('slots_resv').text)
+	if 'all' not in queues.keys():
+		queues['all']= {}
+		queues['all']['slots_total']=0
+		queues['all']['slots_used']=0
+		queues['all']['slots_resv']=0
+		queues['all']['np_load_avg']=[]
+	queues['all']['slots_total'] += int(node.find('slots_total').text)
+	queues['all']['slots_used'] += int(node.find('slots_used').text)
+	queues['all']['slots_resv'] += int(node.find('slots_resv').text)
+	load=node.find('np_load_avg')
+	if load is not None:
+		queues[name]['np_load_avg'].append(float(load.text)*100)
+		queues["all"]['np_load_avg'].append(float(load.text)*100)
+
+
+for n in xml_root.iter("Queue-List"):
+	addQueue(n)
+
+print("\nqueue_name".ljust(20) + "\t".join(map(lambda x: str(x).ljust(10),["slots_total","slots_used","slots_resv","%slots_used","%slots_resv","median_load"])))
+if args.queue is not None: 
+	show = [args.queue]
+else: 
+	show=sorted(queues.keys())
+for q in show:
+	l=list(map(lambda x: queues[q][x], ["slots_total","slots_used","slots_resv"] )) + list(map(lambda x: "%.2f" % (queues[q][x]/queues[q]["slots_total"]*100), ["slots_used","slots_resv"]))
+	l.append(np.median(queues[q]["np_load_avg"]))
+	print(q.ljust(20)+ "\t".join(map(lambda x: str(x).ljust(10),l)))
+
