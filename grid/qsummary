@@ -75,10 +75,14 @@ def addQueue(node):
 	if load is not None:
 		queues[name]['np_load_avg'].append(float(load.text)*100)
 		queues["all"]['np_load_avg'].append(float(load.text)*100)
-
+pending = 0
 
 for n in xml_root.iter("Queue-List"):
 	addQueue(n)
+for n in xml_root.iter("job_list"):
+	if n.get("state")=="pending": 
+		pending+=int(n.find('slots').text)
+
 
 print("\nqueue_name".ljust(20) + "\t".join(map(lambda x: str(x).ljust(10),["slots_total","slots_used","slots_resv","%slots_used","%slots_resv","median_load"])))
 if args.queue is not None: 
@@ -90,3 +94,4 @@ for q in show:
 	l.append(np.median(queues[q]["np_load_avg"]))
 	print(q.ljust(20)+ "\t".join(map(lambda x: str(x).ljust(10),l)))
 
+print("\ntotal slots of pending jobs:\t%i\n" % pending)
