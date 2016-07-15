@@ -31,6 +31,8 @@ parser = argparse.ArgumentParser(description = 'Summarize running queues/jobs')
 parser.add_argument('-v', '--version', action='version', version='%(prog)s {0}'.format(version))
 parser.add_argument('-q', '--queue', dest='queue', action='store', default=None, help='show only specific queue')
 parser.add_argument('-u', '--user', dest='user', action='store', default=None, help='show only specific user')
+parser.add_argument('-o', '--offline', dest='offline', action='store_true', default=False, help='show offline hosts')
+
 args = parser.parse_args()
 
 def error(message): exit('ERROR: {}'.format(message))
@@ -54,10 +56,15 @@ try: xml_root = xml.etree.ElementTree.fromstring(result)
 except: error('failed to parse returned XML')
 
 queues	= {}
+offline_hosts = []
 
 def addQueue(node):
-	p=re.compile("^([^\@]+)\@")
+	p=re.compile("^([^\@]+)\@(.+)$")
 	name=p.match(node.find("name").text).group(1)
+	qstate=node.find("state")
+	if qstate != None and qstate.text != "r":
+		offline_hosts.append("%s [%s slots]"  % ( node.find("name").text, node.find("slots_total").text ) )
+		return()
 	if name not in queues.keys():
 		queues[name]= {}
 		queues[name]['slots_total']=0
@@ -108,4 +115,5 @@ for q in show:
 	l.append("%.2f" % np.median(queues[q]["np_load_avg"]))
 	print(q.ljust(20)+ "\t".join(map(lambda x: str(x).rjust(10),l)))
 
-print("\ntotal slots of pending jobs:\t%i\n" % pending)
+print("\ntotal slots of pending jobs:\t%i\n\n" % pending)
+if args.offline: print("Offline hosts:\n"+ "\n".join(offline_hosts) +"\n") 
