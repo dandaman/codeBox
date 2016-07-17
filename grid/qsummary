@@ -41,7 +41,7 @@ def error(message): exit('ERROR: {}'.format(message))
 try: 
 	add_args=["qstat"]
 	if args.user is not None: add_args= add_args+["-u",args.user]
-	if args.queue is not None: add_args=add_args+["-u",args.queue]
+	if args.queue is not None: add_args=add_args+["-q",args.queue]
 	add_args=add_args+[ '-f', '-xml' ]
 	qstat_process = subprocess.Popen(args=add_args, stdout=subprocess.PIPE, universal_newlines=True)
 except: error('failed to execute subprocess "qstat"')
@@ -100,9 +100,8 @@ pending = 0
 
 for n in xml_root.iter("Queue-List"):
 	addQueue(n)
-for n in xml_root.iter("job_list"):
-	if n.get("state")=="pending": 
-		pending+=int(n.find('slots').text)
+for n in xml_root.findall("*//job_list[@state='pending']"):
+	pending+=int(n.find('slots').text)
 
 
 print("\nqueue_name".ljust(20) + "\t".join(map(lambda x: str(x).ljust(10),["slots_total","slots_used","slots_resv","%slots_used","%slots_resv","median_load"])))
