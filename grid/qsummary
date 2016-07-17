@@ -97,11 +97,21 @@ def addQueue(node):
 				queues['all']['slots_used'] += int(j.find('slots').text)
 				queues[name]['slots_used'] += int(j.find('slots').text)
 pending = 0
+pending_job = 0
 
 for n in xml_root.iter("Queue-List"):
 	addQueue(n)
 for n in xml_root.findall("*//job_list[@state='pending']"):
-	pending+=int(n.find('slots').text)
+	p=re.compile("^(\d+)-(\d+):(\d+)$")
+	tasks=n.find("tasks")
+	if tasks != None:
+		m=p.match(tasks.text)
+		if m != None:
+			ntasks=(int(m.group(2))-int(m.group(1))+1)
+			pending+=int(n.find('slots').text)*ntasks
+		else: pending+=int(n.find('slots').text)
+	else: pending+=int(n.find('slots').text)
+	pending_job+=1
 
 
 print("\nqueue_name".ljust(20) + "\t".join(map(lambda x: str(x).ljust(10),["slots_total","slots_used","slots_resv","%slots_used","%slots_resv","median_load"])))
@@ -114,5 +124,5 @@ for q in show:
 	l.append("%.2f" % np.median(queues[q]["np_load_avg"]))
 	print(q.ljust(20)+ "\t".join(map(lambda x: str(x).rjust(10),l)))
 
-print("\ntotal slots of pending jobs:\t%i\n\n" % pending)
+print("\n%i pending jobs with %i slots in total\n\n" % (pending_job,pending))
 if args.offline: print("Offline hosts:\n"+ "\n".join(offline_hosts) +"\n") 
