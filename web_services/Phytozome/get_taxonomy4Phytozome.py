@@ -10,7 +10,7 @@ query.add_view(
     "annotationVersion", "assemblyVersion", "commonName", "genus", "name",
     "proteomeId", "shortName", "species", "taxonId", "version"
 )
-k=["annotationVersion", "assemblyVersion", "commonName", "genus", "name", "proteomeId", "shortName", "species", "taxonId", "version"]
+k=["proteomeId", "commonName", "name", "shortName","annotationVersion", "assemblyVersion",  "genus", "species", "taxonId", "version"]
 t=["superkingdom", "kingdom", "phylum", "class", "subclass", "order", "family", "genus","species"]
 print("\t".join(k+t+["full_lineage"]))
 
