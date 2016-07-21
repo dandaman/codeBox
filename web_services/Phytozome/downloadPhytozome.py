@@ -10,7 +10,7 @@ import os.path
 
 login	= sys.argv[1]
 path	= sys.argv[2]
-version	= sys.argv[3] if len(sys.argv)>3 else 11
+version	= int(sys.argv[3]) if len(sys.argv)>3 else 11
 
 exclude_extensions 	= ["\.gvcf\.gz","\.vcf\.gz"]
 excl_re			= re.compile("|".join(exclude_extensions)+"$")
