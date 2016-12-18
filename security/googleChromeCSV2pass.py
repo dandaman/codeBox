@@ -9,6 +9,7 @@
 import csv
 import itertools
 import sys
+import os
 import time
 from subprocess import Popen, PIPE
 
@@ -39,7 +40,7 @@ def prepareForInsertion(row):
 		keyFolder = escape(sys.argv[2])
 
 	keyName = escape(row[0])
-	username = row[2]
+	username = row[2] if row[2] else "NO_USER"
 	password = row[3]
 	url = row[1]
 	
@@ -59,6 +60,12 @@ def main(argv):
 	inputFile = sys.argv[1]
 	print("File to read: " + inputFile)
 	readFile(inputFile)
+	
+	yes = set(['yes','y', 'ye', ''])
+	choice=input("Do you want to delete " + inputFile + "? [y|N]: ").lower()
+	if choice in yes:
+		os.remove(inputFile)
+		print(inputFile+" deleted!\n")
 
 
 main(sys.argv)
