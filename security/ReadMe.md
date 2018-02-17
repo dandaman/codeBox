@@ -3,6 +3,7 @@
 Little helper script to import Google Chrome Password.csv to Linux tool pass
 Adapted from existing python tool to import Keepass2 csv
 
+Sadly it does not work anymore as Google removed the export option
 ### Instructions
 In your Google Chrome (or Chromium, whichever you use), type the following in your URL bar: 
 `chrome://flags/#password-import-export`, and then enable the feature.
