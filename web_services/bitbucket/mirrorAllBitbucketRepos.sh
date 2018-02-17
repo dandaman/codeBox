@@ -3,6 +3,7 @@
 #Usage: getAllRepos.sh login user_or_team_name
 #source://movingtothedarkside.wordpress.com/2015/01/10/clone-all-repositories-from-a-user-bitbucket/
 #modified by DL
+#17.02.2018
 
 curl -u ${1} https://api.bitbucket.org/1.0/users/${2} > repoinfo
 
