@@ -5,9 +5,9 @@
 #modified by DL
 #17.02.2018
 
-curl -u ${1} https://api.bitbucket.org/1.0/users/${2} > repoinfo
+curl -u ${1} https://api.bitbucket.org/1.0/users/${2} > ${2}.bitbucket.repoinfo
 
-for repo_name in `cat repoinfo | sed -r 's/("name": )/\n\1/g' | sed -r 's/"name": "(.*)"/\1/' | sed -e 's/{//' | cut -f1 -d\" | tr '\n' ' '`
+for repo_name in `cat ${2}.bitbucket.repoinfo | sed -r 's/("name": )/\n\1/g' | sed -r 's/"name": "(.*)"/\1/' | sed -e 's/{//' | cut -f1 -d\" | tr '\n' ' '`
 do
     echo "Cloning " $repo_name
     git clone --mirror ssh://git@bitbucket.org/${2}/$repo_name
