@@ -5,6 +5,9 @@ import Bio.SeqIO
 import argparse
 import sys
 
+#just adapted this one to my needs
+##initial script my Michael Seidel
+
 parser = argparse.ArgumentParser(description='Converts GFF3 to BED12 (12 column BED format). See https://genome.ucsc.edu/FAQ/FAQformat.html#format1 and https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md for details.')
 parser.add_argument('-i','--in', dest='gff3',type=str, help='GFF3 input file name',required=True)
 parser.add_argument('-o', '--out', dest='bed12',type=str,  help='BED12 output file name',required=True)
