@@ -1,8 +1,8 @@
 #!/bin/perl 
 use warnings;
 use strict;
-use lib qq($ENV{HOME}/bioperl/bioperl-live);
-use lib qq($ENV{HOME}/bioperl/bioperl-run/lib);
+#use lib qq($ENV{HOME}/bioperl/bioperl-live);
+#use lib qq($ENV{HOME}/bioperl/bioperl-run/lib);
 use Bio::SeqIO;
 use Bio::Factory::EMBOSS;
 use Bio::AlignIO;
@@ -10,11 +10,10 @@ use File::Temp qw(tempfile);
 use Getopt::Long;
 use Bio::Align::Utilities qw(aa_to_dna_aln);
 
-my ($help, @model, $USAGE, $KaKs_Calculator, $revtrans, $gapopen, $gapextend);
+my ($help, @model, $USAGE, $KaKs_Calculator, $gapopen, $gapextend);
 
 $USAGE                  = "$0 -h | [-m model] CDS_file\n";
-#$revtrans               = "/home/lang/software/alignments/RevTrans-1.4/revtrans.py %s %s -readthroughstop -match name -O fasta %s"; #input_na aln out
-$KaKs_Calculator        = "$ENV{HOME}/software/phylogeny/PAML/KaKs_Calculator2.0/src/KaKs_Calculator -i %s -o %s %s"; #inaxt out -m model
+$KaKs_Calculator        = "$ENV{HOME}/software/KaKs_Calculator2.0/src/KaKs_Calculator -i %s -o %s %s"; #inaxt out -m model
 $gapopen                = '10.0';
 $gapextend              = '0.5';
 
@@ -48,7 +47,8 @@ while (my $s = $in->next_seq) {
 
 my %seen;
 for (my $i=0; $i< @aa-1; $i++) {
-    for (my $e=$i+1; $e< @aa; $e++) {
+    for (my $e=0; $e< @aa; $e++) {
+		next if $i == $e;
         next if exists $seen{$i}{$e} || exists $seen{$e}{$i};
         my ($fh,$filename)      = tempfile( UNLINK=>1, SUFFIX => '.needle');
         $factory->run({ 
@@ -59,6 +59,9 @@ for (my $i=0; $i< @aa-1; $i++) {
                 -outfile        => $filename});
         my $alnin       = Bio::AlignIO->new(-format=>"emboss", -file=>$filename);
         my $aln         = $alnin->next_aln;
+		close($fh);
+		undef($fh);
+		undef($filename);
 	unless ($aln && $aln->isa("Bio::SimpleAlign") ) {
 		printf STDERR "No alignment for %s and %s\n", map ({ $names{$_} } ($aa[$i]->display_id, $aa[$e]->display_id));
 		$seen{$i}{$e}++;
@@ -102,6 +105,9 @@ sub run_KaKsCalc {
         }
         $c++;
     }
+	close($fh);
+	undef($fh);
+	undef($filename);
 }
 
 sub write_axt {
@@ -110,5 +116,6 @@ sub write_axt {
     my @s = $aln->each_seq;
     print $fh join("&", map { $_->id} @s),"\n";
     print $fh join("\n", map { $_->seq } @s),"\n";
+	close($fh);
     return $filename;
 }

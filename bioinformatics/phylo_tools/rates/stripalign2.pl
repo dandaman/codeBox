@@ -29,7 +29,7 @@ The stripped alignment is returned to STDOUT in fasta format
 =cut
 
 use strict;
-use lib qw(/home/lang/scripts/TreePipe/msa);
+use lib qw(/home/pgsb/daniel.lang/git/codebox/bioinformatics/phylo_tools/rates);
 use bioutils;
 use Statistics::Descriptive;
 
@@ -189,7 +189,7 @@ sub anchor
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 sub read_blosum
  {
-  my $blosum_file="/home/lang/scripts/TreePipe/msa/blosum62.txt";
+  my $blosum_file="/home/pgsb/daniel.lang/git/codebox/bioinformatics/phylo_tools/rates/blosum62.txt";
   my (@residus);
   my (%matrix);
   open (IN,$blosum_file) || die "Could not open $blosum_file: $!\n";

@@ -35,7 +35,7 @@ to STDOUT.
 =cut
 
 use strict;
-use lib qw(/home/lang/scripts/TreePipe/msa);
+use lib qw(/home/pgsb/daniel.lang/git/codebox/bioinformatics/phylo_tools/rates);
 use bioutils;
 use IPC::Open2;
 
@@ -263,7 +263,7 @@ sub strip_align
   my ($align, $read, $write, $id, $process_id);
   $align= $_[0];
 #  $process_id = open2( $read, $write, "~/scripts/TreePipe/msa/stripalign3.pl" );
-  $process_id = open2( $read, $write, "~/scripts/TreePipe/msa/stripalign2.pl 0 100 y" );
+  $process_id = open2( $read, $write, "/home/pgsb/daniel.lang/git/codebox/bioinformatics/phylo_tools/rates/stripalign2.pl 0 100 y" );
 
 #   open( BUG, ">test.tfa" ); #debug
   foreach $id (keys %$align)
