@@ -1,0 +1,4 @@
+wget http://purl.obolibrary.org/obo/go.obo
+wget http://purl.obolibrary.org/obo/po.obo
+wget http://purl.obolibrary.org/obo/to.obo
+wget http://purl.obolibrary.org/obo/eo.obo

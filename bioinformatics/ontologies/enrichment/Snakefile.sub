@@ -1,0 +1,36 @@
+S, = glob_wildcards("sets/{sets}.set")
+rule all:
+	input: "DONE"
+
+rule get_tables:
+	input: 
+		expand("out/table-{sets}-Parent-Child-Union-Bonferroni-Holm.txt",sets=S),
+		expand("out/table-{sets}-Parent-Child-Union-Benjamini-Hochberg.txt",sets=S)
+	output: "DONE"
+	shell: "touch DONE"
+
+rule make_enrichment:
+	input: 
+		ofolder="out",
+		inset="sets/{sets}.set",
+		goa="input.gaf",
+		ontology="ontology.obo",
+		pop="pop"
+
+	output: 
+		"out/table-{sets}-Parent-Child-Union-Bonferroni-Holm.txt"
+	shell: 
+		"java -Xms512m -Xmx10G -jar /home/pgsb/daniel.lang/software/Ontologizer.jar -a {input.goa} -c Parent-Child-Union -d -g {input.ontology} -i -m Bonferroni-Holm -n -o {input.ofolder} -s {input.inset} -p {input.pop}"
+
+rule make_enrichment_BH:
+	input: 
+		ofolder="out",
+		inset="sets/{sets}.set",
+		goa="input.gaf",
+		ontology="ontology.obo",
+		pop="pop"
+
+	output: 
+		"out/table-{sets}-Parent-Child-Union-Benjamini-Hochberg.txt"
+	shell: 
+		"java -Xms512m -Xmx10G -jar /home/pgsb/daniel.lang/software/Ontologizer.jar -a {input.goa} -c Parent-Child-Union -d -g {input.ontology} -i -m Benjamini-Hochberg -n -o {input.ofolder} -s {input.inset} -p {input.pop}"
