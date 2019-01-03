@@ -1,4 +1,5 @@
 package bioutils;
+#Created by Cedric Simillion on Fri Jul  1 10:17:12 CEST 2005
 
 use strict;
 
