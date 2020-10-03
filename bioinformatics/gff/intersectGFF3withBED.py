@@ -11,6 +11,7 @@ parser.add_argument("BED", metavar="BED_file", type=str, help="path to BED file"
 parser.add_argument("output", metavar="OUTPUT_file", type=str, help="path to filtered output GFF3 file",nargs="?",default=sys.stdout)
 parser.add_argument("-t","--type", dest="tag",metavar="type", type=str, help="feature type i.e primary tag in GFF3 to return", default=None)
 parser.add_argument("-a","--attribute",dest="attribute", metavar="ATTRIBUTE" ,help="Do not return GFF3. Return value of specified attribute filed of 8th column",default=None)
+parser.add_argument("-j","--join",dest="join", metavar="JOIN" ,help="RETURN original BED and join found value of attribute specified by JOIN",default=None)
 args = parser.parse_args()
 
 def index_gff3(gff3_file_path):
@@ -35,14 +36,14 @@ def index_gff3(gff3_file_path):
 			tree = IntervalTree()
 			genome[seqid] = tree
 		# index the feature
-		if args.attribute is None:
+		if args.attribute is None and args.join is None:
 			tree.add(start, end, row)
 		else :
 			attr=row[8].split(";")
 			o=list()
 			for n in attr:
 				k,v=n.split("=")
-				if k == args.attribute:
+				if k == args.attribute or k == args.join:
 					o.append(v)
 			o=",".join(o)
 			tree.add(start, end, o)
@@ -51,10 +52,18 @@ def index_gff3(gff3_file_path):
 genome = index_gff3(args.GFF3)
 d=pd.read_csv(args.BED,sep="\t",header=None)
 
-D=d.apply(lambda x: genome[x[0]].find(x[1]+1,x[2]),axis=1)
-
-o=list()
-for g in D.tolist():
-	o.append(pd.DataFrame(g))
-o=pd.concat(o)
-o.to_csv(args.output,sep="\t",index=False,header=False)
+if args.join is None:
+    D=d.apply(lambda x: genome[x[0]].find(x[1]+1,x[2]) if x[0] in genome else None,axis=1)
+    o=list()
+    for g in D.tolist():
+        o.append(pd.DataFrame(g))
+    o=pd.concat(o)
+    o.to_csv(args.output,sep="\t",index=False,header=False)
+else:
+    o=list()
+    for i,row in d.iterrows():
+        if row[0] in genome:
+            a=genome[row[0]].find(row[1]+1,row[2])
+            o.append(pd.DataFrame([row.tolist() + [",".join(a)]],columns=list(row.index).append(args.join)))
+    o=pd.concat(o)
+    o.to_csv(args.output,sep="\t",index=False,header=False)
