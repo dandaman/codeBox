@@ -12,6 +12,8 @@ parser.add_argument("output", metavar="OUTPUT_file", type=str, help="path to fil
 parser.add_argument("-t","--type", dest="tag",metavar="type", type=str, help="feature type i.e primary tag in GFF3 to return", default=None)
 parser.add_argument("-a","--attribute",dest="attribute", metavar="ATTRIBUTE" ,help="Do not return GFF3. Return value of specified attribute filed of 8th column",default=None)
 parser.add_argument("-j","--join",dest="join", metavar="JOIN" ,help="RETURN original BED and join found value of attribute specified by JOIN",default=None)
+parser.add_argument("-o","--only",dest="only", action="store_true" ,help="RETURN only mapped in conjuction with -j",default=None)
+
 args = parser.parse_args()
 
 def index_gff3(gff3_file_path):
@@ -64,6 +66,8 @@ else:
     for i,row in d.iterrows():
         if row[0] in genome:
             a=genome[row[0]].find(row[1]+1,row[2])
+            if args.only and (a is None or len(a)==0):
+                continue
             o.append(pd.DataFrame([row.tolist() + [",".join(a)]],columns=list(row.index).append(args.join)))
     o=pd.concat(o)
     o.to_csv(args.output,sep="\t",index=False,header=False)
